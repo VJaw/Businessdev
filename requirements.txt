@@ -1,0 +1,5 @@
+crewai>=1.15,<2
+streamlit>=1.40
+requests>=2.32
+python-dotenv>=1.0
+pydantic>=2.9
