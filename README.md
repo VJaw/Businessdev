@@ -94,6 +94,48 @@ All in `.env` (see `.env.example`):
 
 `.env` is gitignored. Never commit keys.
 
+## Deploy to Streamlit Community Cloud
+
+Free hosting that deploys straight from GitHub. The repo already has what it needs:
+`requirements.txt` at the root, `app.py` as the entrypoint, and `.python-version` pinning 3.12.
+
+1. Sign in at https://share.streamlit.io
+2. Link your GitHub account (it needs admin access to the repo)
+3. **New app → Deploy from GitHub** → pick `VJaw/Businessdev` → branch `main` → entrypoint `app.py`
+4. Open **Advanced settings → Secrets** and paste:
+
+   ```toml
+   OPENAI_API_KEY = "sk-..."
+   SERPER_API_KEY = "..."
+   RESEARCH_MODEL = "gpt-4o-mini"
+   WRITER_MODEL = "gpt-4o"
+   SERPER_MAX_RESULTS = "8"
+   MAX_SEARCHES_PER_AGENT = "4"
+   MAX_RPM = "20"
+   ```
+
+5. Deploy
+
+Secrets go into `st.secrets`, not the process environment, so `bizdev/config.py` reads
+`st.secrets` first and only falls back to `.env`. Locally it never touches `st.secrets`, so
+`run_cli.py` keeps working off `.env` alone. Real environment variables always win over
+`st.secrets`.
+
+Every push to `main` redeploys automatically.
+
+### Before you share the link
+
+The app has no authentication and no rate limiting. Anyone who finds the URL spends your
+OpenAI tokens and burns the one-time Serper allowance. Options, in rough order of effort:
+
+- Keep it unlisted, share the URL only with people you trust
+- Add a password gate at the top of `app.py` (`st.text_input("password", type="password")`
+  compared against a secret) — this stops casual visitors, not a determined attacker
+- Put it behind Cloudflare Access or a similar auth proxy
+- Switch to a platform with built-in auth, or pay for a Streamlit team plan
+
+Also expect slow cold starts: free-tier apps sleep when idle and take a while to wake.
+
 ## Layout
 
 ```
